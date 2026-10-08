@@ -1,0 +1,37 @@
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+credentials.json
+credentials.*.json
+service-account*.json
+service_account*.json
+api-credentials*
+api_credentials*
+secrets.json
+secrets/
+.aws/
+.codex/auth.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python caches and environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# JavaScript dependencies and build output
+node_modules/
+.next/
+
+# Temporary runtime state; preserve the state directory's ignore policy
+.codex/.capture-state/*
+!.codex/.capture-state/.gitignore
+*.tmp
+*.tmp-*
+
+# .agent-logs/*.md is submission evidence and must remain tracked.

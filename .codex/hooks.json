@@ -1,0 +1,29 @@
+{
+  "description": "8x assignment: capture full submitted prompts and final replies",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'C:\\Users\\Kaust\\AppData\\Local\\Programs\\Python\\Python311\\python.exe' 'D:\\Code\\higgsfield-rebuild\\.codex\\hooks\\capture.py'",
+            "commandWindows": "C:\\Users\\Kaust\\AppData\\Local\\Programs\\Python\\Python311\\python.exe D:\\Code\\higgsfield-rebuild\\.codex\\hooks\\capture.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "'C:\\Users\\Kaust\\AppData\\Local\\Programs\\Python\\Python311\\python.exe' 'D:\\Code\\higgsfield-rebuild\\.codex\\hooks\\capture.py'",
+            "commandWindows": "C:\\Users\\Kaust\\AppData\\Local\\Programs\\Python\\Python311\\python.exe D:\\Code\\higgsfield-rebuild\\.codex\\hooks\\capture.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
