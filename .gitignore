@@ -27,6 +27,9 @@ venv/
 # JavaScript dependencies and build output
 node_modules/
 .next/
+out/
+test-results/
+playwright-report/
 
 # Temporary runtime state; preserve the state directory's ignore policy
 .codex/.capture-state/*

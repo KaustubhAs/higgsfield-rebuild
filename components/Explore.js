@@ -1,0 +1,13 @@
+'use client';
+import { useState } from 'react';
+import Link from 'next/link';
+import { templates } from '../lib/templates';
+import ConceptArt from './ConceptArt';
+import Icon from './Icons';
+
+export default function Explore() {
+  const [filter, setFilter] = useState('all');
+  const visible = templates.filter((template) => filter === 'all' || template.kind === filter);
+  return <div className="page explore-page"><section className="hero"><div className="hero-copy"><p className="eyebrow"><span className="tiny-line" /> LESS SETUP. MORE POSSIBILITY.</p><h1>Big ideas.<br /><span>Start here.</span></h1><p>You bring the vision. Find a direction, shape your brief, and make space for something unexpected.</p><Link href="/image/" className="button primary">Start with an idea <Icon name="arrow" size={18} /></Link><span className="hero-footnote">Image & video workflows, designed around you.</span></div><div className="hero-art"><ConceptArt variant="arch" /><div className="hero-art-caption"><span><span className="art-index">01 /</span> A quieter kind of cinematic.</span><span className="art-credit">Original concept illustration</span></div></div></section>
+    <section className="template-section" aria-labelledby="templates-title"><div className="section-heading"><div><p className="eyebrow">A LITTLE DIRECTION GOES A LONG WAY</p><h2 id="templates-title">What will you create?</h2></div><div className="filter-group" aria-label="Filter templates">{[['all','All ideas'],['image','Image'],['video','Video']].map(([value,label]) => <button key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</button>)}</div></div><div className="template-grid">{visible.map((template) => <Link className="template-card" key={template.id} href={`/${template.kind}/?template=${template.id}`}><div className="template-art"><ConceptArt variant={template.art} /><span className="media-badge"><Icon name={template.kind} size={14} />{template.kind === 'image' ? 'Image' : 'Video concept'}</span><span className="card-arrow"><Icon name="arrow" /></span></div><div className="template-description"><p>{template.category}</p><h3>{template.title}</h3><span>Use this starting point <Icon name="arrow" size={15} /></span></div></Link>)}</div><p className="art-disclosure">All artwork is original vector illustration, not AI-generated output. Templates prefill a draft; they do not run inference.</p></section><section className="intent-banner"><Icon name="sliders" size={27} /><div><h3>Your vision. Your level of control.</h3><p>Start in Guided Mode. Open Advanced whenever you want to shape the prompt yourself.</p></div><Link href="/image/">Explore the studio <Icon name="arrow" size={18} /></Link></section></div>;
+}
