@@ -1,4 +1,3 @@
-import Link from 'next/link';
-import Icon from '../../components/Icons';
-export const metadata = { title: 'Assets' };
-export default function Page() { return <div className="page assets-page"><div className="page-heading"><div><p className="eyebrow">YOUR CREATIVE LIBRARY</p><h1>Assets<span className="count">0</span></h1><p>A home for the things you make.</p></div><span className="subtle-label">Local workspace</span></div><section className="library-empty"><div className="empty-stack"><div /><div /><span><Icon name="assets" size={38} /></span></div><p className="eyebrow">A CLEAN SLATE</p><h2>Your next idea belongs here.</h2><p>No generated assets yet. Start by preparing an image or video draft.<br />This foundation preview does not generate or save media.</p><div className="action-row"><Link className="button primary" href="/image/">Open Image Studio <Icon name="arrow" size={17} /></Link><Link className="button secondary" href="/video/">Plan a video</Link></div></section><div className="library-note"><Icon name="info" /><p>Drafts stay in this browser. Media history, recipe saving and asset management arrive in a later milestone.</p></div></div>; }
+import AssetLibrary from '../../components/AssetLibrary';
+export const metadata={title:'Assets'};
+export default function Page(){return <AssetLibrary/>;}
