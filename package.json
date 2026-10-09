@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "build": "next build",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "dev:pages": "wrangler pages dev out --ip 127.0.0.1 --port 8788",
+    "test:browser": "node scripts/test-pages.mjs"
   },
   "dependencies": {
     "next": "16.4.0",
@@ -14,6 +16,7 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.64.0"
+    "@playwright/test": "^1.64.0",
+    "wrangler": "^4.149.0"
   }
 }

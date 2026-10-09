@@ -1,5 +1,8 @@
 # Local environment and credentials
 .env
+.dev.vars
+.dev.vars.*
+.wrangler/
 .env.*
 !.env.example
 credentials.json

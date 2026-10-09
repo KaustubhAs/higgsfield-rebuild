@@ -1,6 +1,6 @@
 # Higgsfield rebuild - 8x assignment
 
-This 8x assignment rebuild explores an intent-first, Higgsfield-inspired creation studio. Milestone 2 includes Explore templates, consistent Image and Video Studio controls, explicitly applied local recommendations, sample generation, downloads, saved Assets, and reusable recipes.
+This 8x assignment rebuild explores an intent-first, Higgsfield-inspired creation studio. Milestone 3 adds optional Cloudflare FLUX and SDXL image generation while preserving Explore templates, local recommendations, sample generation, downloads, Assets, and reusable recipes. Video stays sample-only.
 
 ## Run locally
 
@@ -13,17 +13,17 @@ Open http://127.0.0.1:3000. Choose an Explore template, edit the shared controls
 
 ```powershell
 npm test
-npx playwright test
 npm run build
+npm run test:browser
 ```
 
-Browser tests use installed Microsoft Edge and start the development server automatically. The production build exports static files to `out/`, suitable for Cloudflare Pages. No deployment is performed by these commands.
+Browser tests use installed Microsoft Edge and an isolated Wrangler Pages runtime with mocked Cloudflare responses. The production build exports static files to `out/`, suitable for Cloudflare Pages. No deployment or live inference is performed by these commands. For real generation, configure `.dev.vars`, run `npm run build` followed by `npm run dev:pages`, and open port 8788. See [Cloudflare setup and manual testing](docs/CLOUDFLARE.md). `next dev` remains sample-only and makes no real-provider endpoint requests.
 
 ## Current limits
 
-Generation is a local mock provider, with explicit sample labels throughout. Image downloads are PNG exports of original procedural SVG illustrations; video downloads are SVG storyboards, not playable videos or AI inference. Model and setting choices affect samples and metadata, but do not invoke real models. Guided suggestions use deterministic rules, not an LLM.
+Image Studio offers a local sample provider and optional server-side Cloudflare inference. Real and sample outputs are labeled separately. Image downloads are PNG files; video downloads are sample SVG storyboards, not playable videos or AI inference. Guided suggestions use deterministic rules, not an LLM. Real batches are bounded to two requests and references are not sent to real models.
 
-Drafts are stored on this browser. Results must be explicitly saved to Assets to survive refresh; named recipes are saved separately. The library supports up to 40 assets and 40 recipes within a conservative localStorage size limit, with visible storage errors. References are resized thumbnails stored locally, never uploaded. Clearing browser data removes this device's drafts and library. There is no account sync, real provider integration, or recipe comparison.
+Drafts use localStorage; Assets and recipes use IndexedDB with migration from the previous localStorage library. Results must be explicitly saved to survive refresh. The library supports up to 40 assets and 40 recipes subject to browser quota, with visible storage errors. References are resized thumbnails stored locally, never uploaded. Clearing browser data removes this origin's drafts and library. There is no account sync or recipe comparison. Live Cloudflare inference through this app still needs the documented manual account test; automated tests use fixtures.
 
 ## Automatic agent capture
 

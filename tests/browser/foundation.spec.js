@@ -22,10 +22,11 @@ test('shared controls, recommendations, batch output, download, assets and recip
   const prompt=page.getByLabel('Your prompt');await expect(prompt).toHaveValue(/sculptural skincare bottle/);
   await page.getByRole('button',{name:'Advanced',exact:true}).click();await prompt.fill('My café — keep this exact prompt');
   await page.getByRole('combobox',{name:'Aspect ratio',exact:true}).selectOption('16:9');await page.getByRole('combobox',{name:'Batch size',exact:true}).selectOption('2');
-  await page.getByRole('button',{name:'Guided',exact:true}).click();await expect(prompt).toHaveValue('My café — keep this exact prompt');await expect(page.getByRole('combobox',{name:'Aspect ratio',exact:true})).toHaveValue('16:9');
+  await page.getByRole('button',{name:'Guided',exact:true}).click();await expect(prompt).toHaveValue('My café — keep this exact prompt');await expect(page.getByText(/Current output format: 16:9/)).toBeVisible();
+  await page.getByRole('combobox',{name:'Desired output format',exact:true}).selectOption('auto');
   await page.getByLabel('What do you want to create?').fill('An abstract vertical story in high quality with variations');
   await page.getByRole('button',{name:'Recommend prompt & settings'}).click();await expect(prompt).toHaveValue('My café — keep this exact prompt');
-  await page.getByRole('button',{name:'Apply recommendation'}).click();await expect(page.getByRole('combobox',{name:'Aspect ratio',exact:true})).toHaveValue('9:16');await expect(page.getByRole('combobox',{name:'Model',exact:true})).toHaveValue('mock-graphic');
+  await page.getByRole('button',{name:'Apply recommendation'}).click();await page.getByRole('button',{name:'Advanced',exact:true}).click();await expect(page.getByRole('combobox',{name:'Aspect ratio',exact:true})).toHaveValue('9:16');await expect(page.getByRole('combobox',{name:'Model',exact:true})).toHaveValue('mock-graphic');
   await page.getByLabel('Elements / references',{exact:true}).fill('glass, leaves');
   await page.getByRole('button',{name:'Generate 2 samples',exact:true}).click();await expect(page.getByText('Creating 2 local samples…')).toBeVisible();
   await expect(page.getByRole('button',{name:'View sample 2'})).toBeVisible();await page.getByRole('button',{name:'View sample 2'}).click();
@@ -40,7 +41,10 @@ test('shared controls, recommendations, batch output, download, assets and recip
     const a=pixels(preview),b=pixels(exported);return a.every((value,i)=>Math.abs(value-b[i])<=1)&&new Set(a).size>20;
   },png.toString('base64'));expect(pixelsMatch).toBe(true);
   for(const name of ['Image Studio','Video Studio']) {
-    await page.getByRole('link',{name,exact:true}).click();await page.locator('input[type=file]').setInputFiles({name:download.suggestedFilename(),mimeType:'image/png',buffer:png});
+    await page.getByRole('link',{name,exact:true}).click();
+    await expect(page.getByRole('main').getByRole('heading',{name:`${name}.`,exact:true})).toBeVisible();
+    const configuration=page.getByRole('region',{name:name==='Image Studio'?'image configuration':'video configuration',exact:true});
+    await configuration.locator('input[type=file]').setInputFiles({name:download.suggestedFilename(),mimeType:'image/png',buffer:png});
     await expect(page.getByText(download.suggestedFilename(),{exact:true})).toBeVisible();
     await expect(page.locator('.reference-field .field-error')).toHaveCount(0);
   }
@@ -82,6 +86,6 @@ test('provider errors and cancellation keep draft intact without fake success',a
 });
 
 test('blocked library writes do not report saved',async({page})=>{
-  await page.addInitScript(()=>{const original=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='frame-studio:library:v1')throw new DOMException('Quota exceeded','QuotaExceededError');return original.call(this,key,value);};});
+  await page.addInitScript(()=>{IDBObjectStore.prototype.put=function(){throw new DOMException('Quota exceeded','QuotaExceededError');};});
   await page.goto('/image/');await page.getByLabel('Your prompt').fill('Sample before quota failure');await page.getByRole('button',{name:'Generate sample',exact:true}).click();await page.getByRole('button',{name:'Save to Assets',exact:true}).click();await expect(page.getByText(/Could not save on this device/)).toBeVisible();await expect(page.getByRole('button',{name:'Save to Assets',exact:true})).toBeEnabled();
 });
