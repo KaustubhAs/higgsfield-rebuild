@@ -9,7 +9,7 @@ Next.js remains a static export. `functions/api/generate.js` is a Cloudflare Pag
 3. Run:
 
 ```powershell
-npm install
+npm ci
 npm run build
 npm run dev:pages
 ```
@@ -25,7 +25,7 @@ Use the existing free Cloudflare account and remain on its free allowance. No bi
 - **FLUX Schnell:** prompt (1–2048 characters), steps 4/8 for Standard/High. No ratio is sent; the UI explicitly selects model-default dimensions. Response is REST JSON `result.image` base64, decoded server-side and signature checked.
 - **SDXL:** prompt, width, height, num_steps 10/20. Bounded size menu: 1:1 = 1024×1024; 4:5 = 768×960; 3:4 = 768×1024; 16:9 = 1024×576; 9:16 = 576×1024. The documented range is 256–2048 on each dimension; these presets fit it. They are schema-valid presets, not a claim that every preset has been live-tested in this repository. The REST binary image is signature checked.
 - SDXL documents image inputs, but image conditioning is deliberately not implemented here. References, elements, and creative direction remain recipe data and are clearly marked as not sent for real inference. Express direction in the prompt; Guided recommendations can help compose it.
-- Real batches contain at most two sequential independent requests. A failure stops remaining calls and preserves completed results. Outputs are kept in the active tab until explicitly saved. Cancellation aborts the client request and attempts upstream cancellation; work already running may still consume quota.
+- Real generation allows one image per request. A later failure preserves previously completed results. Outputs are kept in the active tab until explicitly saved. Cancellation aborts the client request and attempts upstream cancellation; work already running may still consume quota.
 - The server accepts only the allowlisted models, parameter names, preset steps and sizes. No native batch field or arbitrary model/URL is accepted. It returns sanitized errors, never Cloudflare response bodies, account identifiers, tokens, or request logs.
 
 Official references consulted during implementation: [FLUX schema](https://developers.cloudflare.com/workers-ai/models/flux-1-schnell/), [SDXL schema](https://developers.cloudflare.com/workers-ai/models/stable-diffusion-xl-base-1.0/), [Pages local development](https://developers.cloudflare.com/pages/functions/local-development/). The FLUX usage example mentions seed, but its parameter schema and the user-validated contract restrict this integration to prompt and steps.
@@ -51,6 +51,4 @@ Initial verification found that Pages rejects custom `--config` paths. The harne
 
 ## Deployment and remaining limits
 
-For a future Pages deployment, use build command `npm run build`, output `out`, and include the root `functions/` directory through a Functions-aware Pages deployment. Set the three server variables in Pages settings for the intended environment; keep the enable flag false until configured. No Next server is needed.
-
-This milestone has no public-endpoint abuse protection or global application-level quota tracking. Batch limits and same-origin browser checks are not authentication or a rate limiter. Validate live generation and free-tier limits, then address endpoint abuse controls before a public launch. The server uses a 90-second timeout; image responses above 12 MB are rejected. Real video, image conditioning, recipe comparison, and cross-device sync remain outside this milestone.
+See [Milestone 4 deployment and security instructions](DEPLOYMENT.md). Real inference works locally and on public Pages when ENABLE_REAL_GENERATION=true and server credentials are configured. Public use consumes the owner's free allowance; no per-user, per-session or global application quota is imposed. When Cloudflare rejects requests, users can explicitly switch to Sample Mode. The deployment guide covers enabling inference and the emergency kill switch. The server uses a 90-second timeout; image responses above 12 MB are rejected. Real video, image conditioning, recipe comparison, and cross-device sync remain outside this milestone.

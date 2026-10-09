@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 const flux='@cf/black-forest-labs/flux-1-schnell',sdxl='@cf/stabilityai/stable-diffusion-xl-base-1.0';
 // Test fixture only: intercepted HTTP responses, never presented as a live inference test.
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1sAAAAASUVORK5CYII=','base64');
-test('real models preserve draft, explain capabilities, save and reopen real provenance with partial batch failure',async({page})=>{
+test('real models preserve draft, explain capabilities, save and reopen real provenance and recover from a later request failure',async({page})=>{
   test.skip(!process.env.PLAYWRIGHT_BASE_URL,'Real-provider UI is tested against the production export in Wrangler.');
   const submitted=[];
   await page.route('**/api/generate',async route=>{
@@ -32,11 +32,12 @@ test('real models preserve draft, explain capabilities, save and reopen real pro
   await expect(page.getByRole('combobox',{name:'Aspect ratio',exact:true})).toHaveValue('native');
   await page.getByRole('button',{name:'Advanced',exact:true}).click();
   await page.getByLabel('Your prompt').fill('A coffee cup - exact prompt');
-  await page.getByRole('combobox',{name:'Batch size',exact:true}).selectOption('2');
-  await page.getByRole('button',{name:'Generate 2 real images',exact:true}).click();
+  await expect(page.getByRole('combobox',{name:'Batch size',exact:true}).locator('option')).toHaveCount(1);
+  await page.getByRole('button',{name:'Generate 1 real image',exact:true}).click();
   await expect(page.getByText('Real AI image - Cloudflare',{exact:true})).toBeVisible();
   await expect(page.getByText('Model default - 1 x 1',{exact:true})).toBeVisible(); // actual fixture dimensions, not a claimed model default
-  await expect(page.getByText(/1 of 2 outputs completed/)).toBeVisible();
+  await page.getByRole('button',{name:'Generate 1 real image',exact:true}).click();
+  await expect(page.getByText(/Cloudflare quota reached/)).toBeVisible();
   expect(submitted).toEqual(Array(2).fill({model:flux,input:{prompt:'A coffee cup - exact prompt',steps:4}}));
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'Download image',exact:true}).click();
   const file=await download;expect(file.suggestedFilename()).toMatch(/^cloudflare-image.*\.png$/);expect([...(await readFile(await file.path())).subarray(0,8)]).toEqual([137,80,78,71,13,10,26,10]);
@@ -80,4 +81,25 @@ test('legacy library remains intact when migrated into IndexedDB',async({page})=
   await page.getByRole('button',{name:'Save recipe',exact:true}).click();await expect(page.getByRole('button',{name:'Recipe saved'})).toBeDisabled();
   await page.goto('/assets/');await page.reload();await expect(page.getByRole('link',{name:'Open & reuse recipe'})).toBeVisible();
   expect(await page.evaluate(()=>localStorage.getItem('frame-studio:library:v1'))).toBe(legacy);
+});
+
+
+test('quota failure preserves the prompt and offers an explicit sample switch',async({page})=>{
+  test.skip(!process.env.PLAYWRIGHT_BASE_URL,'Uses the production export in Wrangler.');
+  let posts=0;
+  await page.route('**/api/generate',route=>{
+    if(route.request().method()==='GET')return route.fulfill({json:{available:true,message:'Cloudflare enabled (fixture).'}});
+    posts++;return route.fulfill({status:429,json:{error:'Cloudflare quota or rate limit reached. Wait for the daily allowance reset or switch to Sample Mode.'}});
+  });
+  await page.goto('/image/');await page.getByRole('button',{name:'Advanced',exact:true}).click();
+  await page.getByRole('combobox',{name:'Model',exact:true}).selectOption(flux);
+  await page.getByLabel('Your prompt').fill('Preserve my public demo idea');
+  await page.getByRole('button',{name:'Generate 1 real image',exact:true}).click();
+  await expect(page.getByRole('region',{name:'image configuration',exact:true}).getByRole('alert')).toContainText('quota or rate limit');
+  await expect(page.getByRole('button',{name:'Download sample',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('combobox',{name:'Model',exact:true})).toHaveValue(flux);
+  await page.getByRole('button',{name:'Switch to sample mode'}).click();
+  await expect(page.getByLabel('Your prompt')).toHaveValue('Preserve my public demo idea');
+  await page.getByRole('button',{name:'Generate sample',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Download sample',exact:true})).toBeVisible();expect(posts).toBe(1);
 });

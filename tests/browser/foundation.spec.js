@@ -1,6 +1,15 @@
 import {test,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 
+test('favicon is linked and serves SVG artwork',async({page})=>{
+  await page.goto('/');
+  const href=await page.locator('link[rel="icon"]').first().getAttribute('href');
+  expect(href).toContain('icon.svg');
+  const response=await page.request.get(href);expect(response.ok()).toBe(true);
+  expect(response.headers()['content-type']).toContain('image/svg+xml');
+  expect(await response.text()).toContain('<svg');
+});
+
 test('PNG conversion failure reports an error without downloading from studio or Assets',async({page})=>{
   await page.addInitScript(()=>{HTMLCanvasElement.prototype.toBlob=function(callback){callback(null);};});
   const downloads=[];page.on('download',item=>downloads.push(item));
